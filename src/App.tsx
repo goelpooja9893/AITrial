@@ -4,7 +4,7 @@ import { Timeline } from './components/timeline/Timeline';
 import { AddPlaceDialog } from './components/dialogs/AddPlaceDialog';
 import { Button } from './components/common/Button';
 import { usePlacesStore } from './store/usePlacesStore';
-import { Plus, LayoutList, Map as MapIcon, Globe } from 'lucide-react';
+import { Plus, Map as MapIcon, Globe } from 'lucide-react';
 import { PlaceInput } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -197,80 +197,107 @@ function App() {
 
             {/* Sidebar / Overlay for Timeline */}
             <AnimatePresence>
-                <motion.div
-                    className="absolute z-20 top-4 left-4 bottom-4 w-full max-w-sm flex flex-col pointer-events-none"
-                    initial={{ x: -300, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
-                >
-                    {/* Header Card */}
-                    <div className="bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-xl mb-4 pointer-events-auto border border-white/20">
-                        <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                            {currentUser?.name ? `${currentUser.name}'s Tracker` : 'Place Tracker'}
-                        </h1>
-                        <div className="flex gap-4 mt-2 text-xs text-muted-foreground font-medium">
-                            <div className="flex items-center gap-1">
-                                <MapIcon className="h-3 w-3" />
-                                {stats.totalPlaces} Places
+                {(viewMode === 'list' || window.innerWidth >= 768) && (
+                    <motion.div
+                        className={`absolute z-20 top-0 left-0 bottom-0 md:top-4 md:left-4 md:bottom-4 w-full md:w-auto md:max-w-sm flex flex-col pointer-events-none ${viewMode === 'list' ? 'bg-slate-50 md:bg-transparent' : ''}`}
+                        initial={{ x: -300, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -300, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                    >
+                        {/* Header Card with Cool Background */}
+                        <div className="relative overflow-hidden bg-white/90 backdrop-blur-md p-6 rounded-none md:rounded-xl shadow-xl mb-0 md:mb-4 pointer-events-auto border-b md:border border-white/20 shrink-0">
+                            {/* Abstract Background Image */}
+                            <div className="absolute inset-0 z-0">
+                                <img
+                                    src="https://images.unsplash.com/photo-1528543606781-2f6e6857f318?q=80&w=1000&auto=format&fit=crop"
+                                    alt="Background"
+                                    className="w-full h-full object-cover opacity-90 brightness-90 saturate-150"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
                             </div>
-                            <div className="flex items-center gap-1">
-                                <Globe className="h-3 w-3" />
-                                {stats.countries} Countries
+
+                            <div className="relative z-10 text-white">
+                                <h1 className="text-3xl font-black tracking-tight mb-1 drop-shadow-md">
+                                    {currentUser?.name ? `${currentUser.name}'s` : 'My'} <span className="text-teal-300">Journey</span>
+                                </h1>
+                                <div className="flex gap-4 mt-2 text-xs font-bold uppercase tracking-wider text-white/90">
+                                    <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
+                                        <MapIcon className="h-3 w-3" />
+                                        {stats.totalPlaces} Places
+                                    </div>
+                                    <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
+                                        <Globe className="h-3 w-3" />
+                                        {stats.countries} Countries
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Timeline List */}
-                    <div className="flex-1 bg-white/80 backdrop-blur-md rounded-xl shadow-xl overflow-hidden flex flex-col pointer-events-auto border border-white/20">
-                        <div className="p-4 border-b bg-white/50 flex flex-col gap-3 sticky top-0 z-10 backdrop-blur-sm">
-                            <div className="flex justify-between items-center">
-                                <h2 className="font-semibold text-sm uppercase tracking-wider text-slate-500">My Journey</h2>
-                                <Button size="sm" onClick={() => setIsAddDialogOpen(true)} className="rounded-full h-8 w-8 p-0">
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            </div>
+                        {/* Timeline List */}
+                        <div className="flex-1 bg-white/80 backdrop-blur-md rounded-xl shadow-xl overflow-hidden flex flex-col pointer-events-auto border border-white/20">
+                            <div className="p-4 border-b bg-white/50 flex flex-col gap-3 sticky top-0 z-10 backdrop-blur-sm">
+                                <div className="flex justify-between items-center">
+                                    <h2 className="font-semibold text-sm uppercase tracking-wider text-slate-500">My Journey</h2>
+                                    <Button size="sm" onClick={() => setIsAddDialogOpen(true)} className="rounded-full h-8 w-8 p-0">
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                </div>
 
-                            {/* Filter Chips */}
-                            <div className="flex gap-2 text-xs overflow-x-auto pb-1 scrollbar-hide">
-                                <button
-                                    onClick={() => setFilterTag(null)}
-                                    className={`px-3 py-1 rounded-full whitespace-nowrap transition-colors ${!filterTag ? 'bg-primary text-primary-foreground' : 'bg-white text-slate-500 hover:bg-slate-100'}`}
-                                >
-                                    All
-                                </button>
-                                {['visited', 'lived', 'transit'].map(tag => (
+                                {/* Filter Chips */}
+                                <div className="flex gap-2 text-xs overflow-x-auto pb-1 scrollbar-hide">
                                     <button
-                                        key={tag}
-                                        onClick={() => setFilterTag(tag === filterTag ? null : tag)}
-                                        className={`px-3 py-1 rounded-full whitespace-nowrap transition-colors ${filterTag === tag ? 'bg-primary text-primary-foreground' : 'bg-white text-slate-500 hover:bg-slate-100'}`}
+                                        onClick={() => setFilterTag(null)}
+                                        className={`px-3 py-1 rounded-full whitespace-nowrap transition-colors ${!filterTag ? 'bg-primary text-primary-foreground' : 'bg-white text-slate-500 hover:bg-slate-100'}`}
                                     >
-                                        {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                                        All
                                     </button>
-                                ))}
+                                    {['visited', 'lived', 'transit'].map(tag => (
+                                        <button
+                                            key={tag}
+                                            onClick={() => setFilterTag(tag === filterTag ? null : tag)}
+                                            className={`px-3 py-1 rounded-full whitespace-nowrap transition-colors ${filterTag === tag ? 'bg-primary text-primary-foreground' : 'bg-white text-slate-500 hover:bg-slate-100'}`}
+                                        >
+                                            {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="overflow-y-auto flex-1 scrollbar-hide">
+                                <Timeline
+                                    places={userPlaces}
+                                    selectedPlaceId={selectedPlaceId}
+                                    onSelectPlace={(id) => {
+                                        selectPlace(id);
+                                        // On mobile, switch to map when a place is selected
+                                        if (window.innerWidth < 768) {
+                                            setViewMode('map');
+                                        }
+                                    }}
+                                    onImageClick={setLightboxImage}
+                                />
                             </div>
                         </div>
-                        <div className="overflow-y-auto flex-1 scrollbar-hide">
-                            <Timeline
-                                places={userPlaces}
-                                selectedPlaceId={selectedPlaceId}
-                                onSelectPlace={selectPlace}
-                                onImageClick={setLightboxImage}
-                            />
-                        </div>
-                    </div>
-                </motion.div>
+                    </motion.div>
+                )}
             </AnimatePresence>
 
             {/* Mobile Toggle (Visible only on small screens) */}
-            <div className="absolute top-4 right-4 z-40 md:hidden">
-                <Button
-                    size="icon"
-                    variant="secondary"
-                    className="shadow-lg rounded-full"
-                    onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-                >
-                    {viewMode === 'map' ? <LayoutList className="h-4 w-4" /> : <MapIcon className="h-4 w-4" />}
-                </Button>
+            <div className="absolute bottom-6 px-auto left-0 right-0 z-50 md:hidden flex justify-center pointer-events-none">
+                <div className="bg-slate-900/90 backdrop-blur-xl p-1.5 rounded-full shadow-2xl flex gap-1 pointer-events-auto border border-white/10">
+                    <button
+                        onClick={() => setViewMode('map')}
+                        className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${viewMode === 'map' ? 'bg-teal-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        Map
+                    </button>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${viewMode === 'list' ? 'bg-teal-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        List
+                    </button>
+                </div>
             </div>
 
             {/* Main Map Area */}
