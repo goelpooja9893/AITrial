@@ -13,7 +13,7 @@ function App() {
     const { places, addPlace, selectedPlaceId, selectPlace, viewMode, setViewMode } = usePlacesStore();
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-    const handleAddPlace = (input: PlaceInput, date: string, notes: string) => {
+    const handleAddPlace = (input: PlaceInput, date: string, notes: string, image?: string) => {
         addPlace({
             id: uuidv4(),
             ...input,
@@ -21,6 +21,7 @@ function App() {
             visitDate: date,
             notes,
             addedAt: Date.now(),
+            images: image ? [image] : undefined
         });
     };
 

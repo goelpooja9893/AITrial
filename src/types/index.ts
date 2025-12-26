@@ -22,4 +22,5 @@ export interface PlaceInput {
     lat: number;
     lng: number;
     country?: string;
+    image?: string;
 }

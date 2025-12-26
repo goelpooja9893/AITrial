@@ -53,6 +53,11 @@ export function Timeline({ places, onSelectPlace, selectedPlaceId }: TimelinePro
                             <Calendar className="h-3 w-3 mr-1" />
                             {format(new Date(place.visitDate), 'MMMM d, yyyy')}
                         </div>
+                        {place.images && place.images.length > 0 && (
+                            <div className="mb-3 rounded-md overflow-hidden h-32 w-full">
+                                <img src={place.images[0]} alt={place.name} className="h-full w-full object-cover" />
+                            </div>
+                        )}
                         {place.notes && (
                             <p className="text-sm text-slate-600 line-clamp-2">{place.notes}</p>
                         )}

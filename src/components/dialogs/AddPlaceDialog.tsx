@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { searchPlaces } from "../../lib/geocoding"
+import { compressImage } from "../../lib/image"
 import { PlaceInput } from "../../types"
 import { Button } from "../common/Button"
 import { Input } from "../common/Input"
-import { Plus, Loader2, MapPin } from "lucide-react"
+import { Plus, Loader2, MapPin, Image as ImageIcon, X } from "lucide-react"
 
 interface AddPlaceDialogProps {
     isOpen: boolean
     onClose: () => void
-    onAdd: (place: PlaceInput, date: string, notes: string) => void
+    onAdd: (place: PlaceInput, date: string, notes: string, image?: string) => void
 }
 
 export function AddPlaceDialog({ isOpen, onClose, onAdd }: AddPlaceDialogProps) {
@@ -18,6 +19,9 @@ export function AddPlaceDialog({ isOpen, onClose, onAdd }: AddPlaceDialogProps) 
     const [selectedPlace, setSelectedPlace] = useState<PlaceInput | null>(null)
     const [date, setDate] = useState(new Date().toISOString().split('T')[0])
     const [notes, setNotes] = useState("")
+    const [image, setImage] = useState<string | null>(null)
+    const [isCompressing, setIsCompressing] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
         const timer = setTimeout(async () => {
@@ -35,14 +39,30 @@ export function AddPlaceDialog({ isOpen, onClose, onAdd }: AddPlaceDialogProps) 
 
     if (!isOpen) return null
 
+    const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            setIsCompressing(true)
+            try {
+                const compressed = await compressImage(file)
+                setImage(compressed)
+            } catch (error) {
+                console.error("Image compression failed", error)
+            } finally {
+                setIsCompressing(false)
+            }
+        }
+    }
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (selectedPlace) {
-            onAdd(selectedPlace, date, notes)
+            onAdd(selectedPlace, date, notes, image || undefined)
             // Reset
             setQuery("")
             setSelectedPlace(null)
             setNotes("")
+            setImage(null)
             onClose()
         }
     }
@@ -114,12 +134,48 @@ export function AddPlaceDialog({ isOpen, onClose, onAdd }: AddPlaceDialogProps) 
                                     placeholder="Memories, food, rating..."
                                 />
                             </div>
+
+                            <div>
+                                <label className="text-sm font-medium block mb-2">Photo</label>
+                                <div className="flex items-center gap-4">
+                                    {image ? (
+                                        <div className="relative h-20 w-20 rounded-lg overflow-hidden border">
+                                            <img src={image} alt="Preview" className="h-full w-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => setImage(null)}
+                                                className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 hover:bg-black/70"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isCompressing}
+                                        >
+                                            {isCompressing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ImageIcon className="h-4 w-4 mr-2" />}
+                                            {isCompressing ? "Processing..." : "Upload Photo"}
+                                        </Button>
+                                    )}
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={handleImageSelect}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     <div className="flex justify-end gap-2 mt-6">
                         <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-                        <Button type="submit" disabled={!selectedPlace}>Save Memory</Button>
+                        <Button type="submit" disabled={!selectedPlace || isCompressing}>Save Memory</Button>
                     </div>
                 </form>
             </div>

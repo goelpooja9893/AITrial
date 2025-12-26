@@ -57,6 +57,11 @@ export function MapCanvas({ places, selectedPlaceId, onSelectPlace }: MapCanvasP
                     >
                         <Popup className="font-sans">
                             <div className="text-sm font-semibold">{place.name}</div>
+                            {place.images && place.images.length > 0 && (
+                                <div className="my-1 rounded-sm overflow-hidden h-20 w-full">
+                                    <img src={place.images[0]} alt={place.name} className="h-full w-full object-cover" />
+                                </div>
+                            )}
                             <div className="text-xs text-muted-foreground">{place.country}</div>
                             <div className="text-xs mt-1 text-slate-500">
                                 {new Date(place.visitDate).toLocaleDateString()}
