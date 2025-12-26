@@ -80,16 +80,21 @@ export function UserProfileDialog({ isOpen, onClose, places }: UserProfileDialog
                         )}
                     </div>
 
-                    <Button
-                        variant="outline"
-                        onClick={handleLogout}
-                        className="w-full border-red-100 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Log Out
-                    </Button>
+                    <div className="flex justify-end gap-2 mt-6">
+                        <Button variant="outline" onClick={() => {
+                            const url = `${window.location.origin}?public=true`;
+                            navigator.clipboard.writeText(url);
+                            alert("Public Profile Link Copied! " + url);
+                        }}>
+                            Share Profile
+                        </Button>
+                        <Button variant="ghost" onClick={handleLogout}>
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Log Out
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }

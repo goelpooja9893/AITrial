@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Place, ViewMode } from '../types';
+import { Badge, Place, ViewMode } from '../types';
 
 interface PlacesState {
     places: Place[];
+    badges: Badge[]; // Unlocked badges
     viewMode: ViewMode;
+    theme: 'light' | 'dark' | 'midnight';
     selectedPlaceId: string | null;
 
     // Actions
@@ -12,7 +14,9 @@ interface PlacesState {
     removePlace: (id: string) => void;
     updatePlace: (id: string, updates: Partial<Place>) => void;
     setViewMode: (mode: ViewMode) => void;
+    setTheme: (theme: 'light' | 'dark' | 'midnight') => void;
     selectPlace: (id: string | null) => void;
+    unlockBadge: (badge: Badge) => void;
 }
 
 // Helper to filter places by user
@@ -23,11 +27,19 @@ export const usePlacesStore = create<PlacesState>()(
     persist(
         (set) => ({
             places: [],
+            badges: [],
             viewMode: 'map',
+            theme: 'light',
             selectedPlaceId: null,
 
             addPlace: (place) => set((state) => ({
                 places: [place, ...state.places]
+            })),
+
+            setTheme: (theme) => set({ theme }),
+
+            unlockBadge: (badge) => set((state) => ({
+                badges: [...state.badges, badge]
             })),
 
             removePlace: (id) => set((state) => ({

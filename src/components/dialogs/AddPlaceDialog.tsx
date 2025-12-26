@@ -20,6 +20,8 @@ export function AddPlaceDialog({ isOpen, onClose, onAdd }: AddPlaceDialogProps) 
     const [date, setDate] = useState(new Date().toISOString().split('T')[0])
     const [notes, setNotes] = useState("")
     const [image, setImage] = useState<string | null>(null)
+    const [tags, setTags] = useState<('visited' | 'lived' | 'transit')[]>(['visited'])
+    const [mood, setMood] = useState<'happy' | 'excited' | 'relaxed' | 'romantic' | 'adventurous' | 'local' | undefined>(undefined)
     const [isCompressing, setIsCompressing] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -57,12 +59,14 @@ export function AddPlaceDialog({ isOpen, onClose, onAdd }: AddPlaceDialogProps) 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (selectedPlace) {
-            onAdd(selectedPlace, date, notes, image || undefined)
+            onAdd({ ...selectedPlace, tags, mood }, date, notes, image || undefined)
             // Reset
             setQuery("")
             setSelectedPlace(null)
             setNotes("")
             setImage(null)
+            setTags(['visited'])
+            setMood(undefined)
             onClose()
         }
     }
@@ -124,6 +128,46 @@ export function AddPlaceDialog({ isOpen, onClose, onAdd }: AddPlaceDialogProps) 
                             <div>
                                 <label className="text-sm font-medium">When did you visit?</label>
                                 <Input type="date" value={date} onChange={e => setDate(e.target.value)} required />
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">Type of Visit</label>
+                                <div className="flex gap-2">
+                                    {['visited', 'lived', 'transit'].map((tag) => (
+                                        <button
+                                            key={tag}
+                                            type="button"
+                                            onClick={() => setTags(prev =>
+                                                prev.includes(tag as any)
+                                                    ? prev.filter(t => t !== tag)
+                                                    : [...prev, tag as any]
+                                            )}
+                                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${tags.includes(tag as any)
+                                                ? 'bg-blue-600 text-white border-blue-600'
+                                                : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400'
+                                                }`}
+                                        >
+                                            {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">Mood</label>
+                                <select
+                                    value={mood || ''}
+                                    onChange={(e) => setMood(e.target.value as any || undefined)}
+                                    className="w-full text-sm p-2 rounded-md border border-slate-200 bg-white"
+                                >
+                                    <option value="">Select Mood...</option>
+                                    <option value="happy">😊 Happy</option>
+                                    <option value="excited">🤩 Excited</option>
+                                    <option value="relaxed">😌 Relaxed</option>
+                                    <option value="adventurous">🤠 Adventurous</option>
+                                    <option value="romantic">🥰 Romantic</option>
+                                    <option value="local">🏠 Local</option>
+                                </select>
                             </div>
 
                             <div>
