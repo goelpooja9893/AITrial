@@ -13,6 +13,7 @@ export interface Place {
     rating?: number; // 1-5
     addedAt: number; // Timestamp
     images?: string[]; // URLs
+    userId?: string; // Owner of the place
 }
 
 export type ViewMode = 'map' | 'list' | 'stats';

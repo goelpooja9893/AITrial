@@ -42,9 +42,13 @@ export function MapCanvas({ places, selectedPlaceId, onSelectPlace }: MapCanvasP
                 zoomControl={false}
             >
                 <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-                    // Using CartoDB Positron for a clean, premium look
-                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                    attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                />
+                <TileLayer
+                    attribution=''
+                    url="https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png"
+                    opacity={0.7}
                 />
 
                 {places.map((place) => (

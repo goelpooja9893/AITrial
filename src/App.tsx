@@ -9,11 +9,23 @@ import { PlaceInput } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { AnimatePresence, motion } from 'framer-motion';
 
+import { useAuthStore } from './store/useAuthStore';
+import { LoginScreen } from './components/auth/LoginScreen';
+import { selectUserPlaces } from './store/usePlacesStore';
+
 function App() {
     const { places, addPlace, selectedPlaceId, selectPlace, viewMode, setViewMode } = usePlacesStore();
+    const { currentUser, isAuthenticated } = useAuthStore();
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
+    // Filter places for current user
+    const userPlaces = selectUserPlaces({ places } as any, currentUser?.id);
+
+    if (!isAuthenticated) return <LoginScreen />;
+
     const handleAddPlace = (input: PlaceInput, date: string, notes: string, image?: string) => {
+        if (!currentUser) return;
+
         addPlace({
             id: uuidv4(),
             ...input,
@@ -21,13 +33,14 @@ function App() {
             visitDate: date,
             notes,
             addedAt: Date.now(),
-            images: image ? [image] : undefined
+            images: image ? [image] : undefined,
+            userId: currentUser.id
         });
     };
 
     const stats = {
-        totalPlaces: places.length,
-        countries: new Set(places.map(p => p.country).filter(Boolean)).size,
+        totalPlaces: userPlaces.length,
+        countries: new Set(userPlaces.map(p => p.country).filter(Boolean)).size,
     };
 
     return (
@@ -73,7 +86,7 @@ function App() {
                         </div>
                         <div className="overflow-y-auto flex-1 scrollbar-hide">
                             <Timeline
-                                places={places}
+                                places={userPlaces}
                                 selectedPlaceId={selectedPlaceId}
                                 onSelectPlace={selectPlace}
                             />
@@ -97,7 +110,7 @@ function App() {
             {/* Main Map Area */}
             <main className="flex-1 h-full w-full relative">
                 <MapCanvas
-                    places={places}
+                    places={userPlaces}
                     selectedPlaceId={selectedPlaceId}
                     onSelectPlace={selectPlace}
                 />

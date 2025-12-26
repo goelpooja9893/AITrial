@@ -15,6 +15,10 @@ interface PlacesState {
     selectPlace: (id: string | null) => void;
 }
 
+// Helper to filter places by user
+export const selectUserPlaces = (state: PlacesState, userId: string | undefined) =>
+    state.places.filter(p => !p.userId || p.userId === userId);
+
 export const usePlacesStore = create<PlacesState>()(
     persist(
         (set) => ({
