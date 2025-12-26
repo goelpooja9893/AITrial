@@ -30,7 +30,8 @@ function App() {
     const [isPassportOpen, setIsPassportOpen] = useState(false);
     const [isRecapOpen, setIsRecapOpen] = useState(false);
     const [isStoriesOpen, setIsStoriesOpen] = useState(false);
-    const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+    const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
 
     const [newBadge, setNewBadge] = useState<any | null>(null);
     const [filterTag, setFilterTag] = useState<string | null>(null);
@@ -122,9 +123,10 @@ function App() {
             />
 
             <Lightbox
-                isOpen={!!lightboxImage}
-                image={lightboxImage || ''}
-                onClose={() => setLightboxImage(null)}
+                isOpen={lightboxImages.length > 0}
+                images={lightboxImages}
+                initialIndex={lightboxIndex}
+                onClose={() => setLightboxImages([])}
             />
 
             <BadgeNotification badge={newBadge} onClose={() => setNewBadge(null)} />
@@ -218,7 +220,7 @@ function App() {
                             </div>
 
                             <div className="relative z-10 text-white">
-                                <h1 className="text-3xl font-black tracking-tight mb-1 drop-shadow-md">
+                                <h1 className="text-3xl font-black tracking-tight mb-1 drop-shadow-md font-display">
                                     {currentUser?.name ? `${currentUser.name}'s` : 'My'} <span className="text-teal-300">Journey</span>
                                 </h1>
                                 <div className="flex gap-4 mt-2 text-xs font-bold uppercase tracking-wider text-white/90">
@@ -274,7 +276,14 @@ function App() {
                                             setViewMode('map');
                                         }
                                     }}
-                                    onImageClick={setLightboxImage}
+                                    onImageClick={(img) => {
+                                        // Find the place that contains this image
+                                        const place = userPlaces.find(p => p.images?.includes(img));
+                                        if (place?.images) {
+                                            setLightboxImages(place.images);
+                                            setLightboxIndex(place.images.indexOf(img));
+                                        }
+                                    }}
                                 />
                             </div>
                         </div>
@@ -306,7 +315,13 @@ function App() {
                     places={userPlaces}
                     selectedPlaceId={selectedPlaceId}
                     onSelectPlace={selectPlace}
-                    onImageClick={setLightboxImage}
+                    onImageClick={(img) => {
+                        const place = userPlaces.find(p => p.images?.includes(img));
+                        if (place?.images) {
+                            setLightboxImages(place.images);
+                            setLightboxIndex(place.images.indexOf(img));
+                        }
+                    }}
                 />
             </main>
         </div>

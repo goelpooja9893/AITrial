@@ -2,16 +2,7 @@ import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Place } from '../../types';
-
-import L from 'leaflet';
-
-// Fix for default marker icon in Leaflet with webpack/vite
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+import { createCustomMarkerIcon } from './CustomMarker';
 
 interface MapCanvasProps {
     places: Place[];
@@ -33,6 +24,13 @@ function FlyToLocation({ location }: { location: { lat: number; lng: number } })
 export function MapCanvas({ places, selectedPlaceId, onSelectPlace, onImageClick }: MapCanvasProps) {
     const selectedPlace = places.find(p => p.id === selectedPlaceId);
 
+    // Find most recent place
+    const mostRecentPlace = places.length > 0
+        ? places.reduce((latest, current) =>
+            current.addedAt > latest.addedAt ? current : latest
+        )
+        : null;
+
     return (
         <div className="h-full w-full relative z-0">
             <MapContainer
@@ -52,34 +50,40 @@ export function MapCanvas({ places, selectedPlaceId, onSelectPlace, onImageClick
                     opacity={0.7}
                 />
 
-                {places.map((place) => (
-                    <Marker
-                        key={place.id}
-                        position={[place.location.lat, place.location.lng]}
-                        eventHandlers={{
-                            click: () => onSelectPlace(place.id),
-                        }}
-                    >
-                        <Popup className="font-sans">
-                            <div className="text-sm font-semibold">{place.name}</div>
-                            {place.images && place.images.length > 0 && (
-                                <div
-                                    className="my-1 rounded-sm overflow-hidden h-20 w-full cursor-zoom-in hover:brightness-110 transition-all"
-                                    onClick={() => {
-                                        // Leaflet popup events propagation is tricky, this usually works straight away in React Leaflet V4
-                                        onImageClick?.(place.images![0]);
-                                    }}
-                                >
-                                    <img src={place.images[0]} alt={place.name} className="h-full w-full object-cover" />
+                {places.map((place) => {
+                    const isRecent = mostRecentPlace?.id === place.id;
+                    const hasImage = place.images && place.images.length > 0;
+
+                    return (
+                        <Marker
+                            key={place.id}
+                            position={[place.location.lat, place.location.lng]}
+                            icon={createCustomMarkerIcon({ isRecent, hasImage })}
+                            eventHandlers={{
+                                click: () => onSelectPlace(place.id),
+                            }}
+                        >
+                            <Popup className="font-sans">
+                                <div className="text-sm font-semibold">{place.name}</div>
+                                {place.images && place.images.length > 0 && (
+                                    <div
+                                        className="my-1 rounded-sm overflow-hidden h-20 w-full cursor-zoom-in hover:brightness-110 transition-all"
+                                        onClick={() => {
+                                            // Leaflet popup events propagation is tricky, this usually works straight away in React Leaflet V4
+                                            onImageClick?.(place.images![0]);
+                                        }}
+                                    >
+                                        <img src={place.images[0]} alt={place.name} className="h-full w-full object-cover" />
+                                    </div>
+                                )}
+                                <div className="text-xs text-muted-foreground">{place.country}</div>
+                                <div className="text-xs mt-1 text-slate-500">
+                                    {new Date(place.visitDate).toLocaleDateString()}
                                 </div>
-                            )}
-                            <div className="text-xs text-muted-foreground">{place.country}</div>
-                            <div className="text-xs mt-1 text-slate-500">
-                                {new Date(place.visitDate).toLocaleDateString()}
-                            </div>
-                        </Popup>
-                    </Marker>
-                ))}
+                            </Popup>
+                        </Marker>
+                    );
+                })}
 
                 {selectedPlace && <FlyToLocation location={selectedPlace.location} />}
             </MapContainer>

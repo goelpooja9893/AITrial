@@ -46,6 +46,18 @@ export default {
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",
             },
+            fontFamily: {
+                display: ['"Outfit"', 'sans-serif'],
+            },
+            keyframes: {
+                'bounce-subtle': {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-4px)' },
+                },
+            },
+            animation: {
+                'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite',
+            },
         },
     },
     plugins: [],
