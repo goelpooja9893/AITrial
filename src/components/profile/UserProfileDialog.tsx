@@ -1,7 +1,7 @@
 import { useAuthStore } from "../../store/useAuthStore";
 import { Place } from "../../types";
 import { Button } from "../common/Button";
-import { Flag, LogOut, Map, Trophy, X } from "lucide-react";
+import { LogOut, Trophy, X } from "lucide-react";
 import { getFlagEmoji } from "../../lib/flags";
 
 interface UserProfileDialogProps {

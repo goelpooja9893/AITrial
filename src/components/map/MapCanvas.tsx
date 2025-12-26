@@ -65,7 +65,7 @@ export function MapCanvas({ places, selectedPlaceId, onSelectPlace, onImageClick
                             {place.images && place.images.length > 0 && (
                                 <div
                                     className="my-1 rounded-sm overflow-hidden h-20 w-full cursor-zoom-in hover:brightness-110 transition-all"
-                                    onClick={(e) => {
+                                    onClick={() => {
                                         // Leaflet popup events propagation is tricky, this usually works straight away in React Leaflet V4
                                         onImageClick?.(place.images![0]);
                                     }}
