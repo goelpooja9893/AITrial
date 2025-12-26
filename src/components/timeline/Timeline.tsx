@@ -8,9 +8,10 @@ interface TimelineProps {
     places: Place[];
     onSelectPlace: (id: string) => void;
     selectedPlaceId: string | null;
+    onImageClick?: (image: string) => void;
 }
 
-export function Timeline({ places, onSelectPlace, selectedPlaceId }: TimelineProps) {
+export function Timeline({ places, onSelectPlace, selectedPlaceId, onImageClick }: TimelineProps) {
     // Sort by date descending
     const sortedPlaces = [...places].sort((a, b) =>
         new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime()
@@ -54,8 +55,15 @@ export function Timeline({ places, onSelectPlace, selectedPlaceId }: TimelinePro
                             {format(new Date(place.visitDate), 'MMMM d, yyyy')}
                         </div>
                         {place.images && place.images.length > 0 && (
-                            <div className="mb-3 rounded-md overflow-hidden h-32 w-full">
-                                <img src={place.images[0]} alt={place.name} className="h-full w-full object-cover" />
+                            <div
+                                className="mb-3 rounded-md overflow-hidden h-32 w-full cursor-zoom-in relative group"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onImageClick?.(place.images![0]);
+                                }}
+                            >
+                                <img src={place.images[0]} alt={place.name} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                             </div>
                         )}
                         {place.notes && (

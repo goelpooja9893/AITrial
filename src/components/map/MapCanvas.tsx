@@ -17,6 +17,7 @@ interface MapCanvasProps {
     places: Place[];
     selectedPlaceId: string | null;
     onSelectPlace: (id: string) => void;
+    onImageClick?: (image: string) => void;
 }
 
 function FlyToLocation({ location }: { location: { lat: number; lng: number } }) {
@@ -29,7 +30,7 @@ function FlyToLocation({ location }: { location: { lat: number; lng: number } })
     return null;
 }
 
-export function MapCanvas({ places, selectedPlaceId, onSelectPlace }: MapCanvasProps) {
+export function MapCanvas({ places, selectedPlaceId, onSelectPlace, onImageClick }: MapCanvasProps) {
     const selectedPlace = places.find(p => p.id === selectedPlaceId);
 
     return (
@@ -62,7 +63,13 @@ export function MapCanvas({ places, selectedPlaceId, onSelectPlace }: MapCanvasP
                         <Popup className="font-sans">
                             <div className="text-sm font-semibold">{place.name}</div>
                             {place.images && place.images.length > 0 && (
-                                <div className="my-1 rounded-sm overflow-hidden h-20 w-full">
+                                <div
+                                    className="my-1 rounded-sm overflow-hidden h-20 w-full cursor-zoom-in hover:brightness-110 transition-all"
+                                    onClick={(e) => {
+                                        // Leaflet popup events propagation is tricky, this usually works straight away in React Leaflet V4
+                                        onImageClick?.(place.images![0]);
+                                    }}
+                                >
                                     <img src={place.images[0]} alt={place.name} className="h-full w-full object-cover" />
                                 </div>
                             )}

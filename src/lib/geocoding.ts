@@ -9,6 +9,7 @@ interface NominatimResult {
     display_name: string;
     address?: {
         country?: string;
+        country_code?: string;
     };
 }
 
@@ -32,7 +33,8 @@ export async function searchPlaces(query: string): Promise<PlaceInput[]> {
             name: item.display_name.split(',')[0], // Simple name
             lat: parseFloat(item.lat),
             lng: parseFloat(item.lon),
-            country: item.address?.country
+            country: item.address?.country,
+            countryCode: item.address?.country_code
         }));
     } catch (error) {
         console.error('Search error:', error);

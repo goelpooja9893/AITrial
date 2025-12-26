@@ -12,11 +12,18 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from './store/useAuthStore';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { selectUserPlaces } from './store/usePlacesStore';
+import { UserProfileDialog } from './components/profile/UserProfileDialog';
+import { Passport } from './components/timeline/Passport';
+import { Lightbox } from './components/common/Lightbox';
+import { UserCircle, BookOpen } from 'lucide-react';
 
 function App() {
     const { places, addPlace, selectedPlaceId, selectPlace, viewMode, setViewMode } = usePlacesStore();
     const { currentUser, isAuthenticated } = useAuthStore();
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isPassportOpen, setIsPassportOpen] = useState(false);
+    const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
     // Filter places for current user
     const userPlaces = selectUserPlaces({ places } as any, currentUser?.id);
@@ -34,7 +41,8 @@ function App() {
             notes,
             addedAt: Date.now(),
             images: image ? [image] : undefined,
-            userId: currentUser.id
+            userId: currentUser.id,
+            countryCode: input.countryCode
         });
     };
 
@@ -50,6 +58,49 @@ function App() {
                 onClose={() => setIsAddDialogOpen(false)}
                 onAdd={handleAddPlace}
             />
+
+            <UserProfileDialog
+                isOpen={isProfileOpen}
+                onClose={() => setIsProfileOpen(false)}
+                places={userPlaces}
+            />
+
+            <Passport
+                isOpen={isPassportOpen}
+                onClose={() => setIsPassportOpen(false)}
+                places={userPlaces}
+                user={{ name: currentUser?.name || 'Traveler', avatar: currentUser?.avatar }}
+            />
+
+            <Lightbox
+                isOpen={!!lightboxImage}
+                image={lightboxImage || ''}
+                onClose={() => setLightboxImage(null)}
+            />
+
+            {/* Top Right Controls (Profile & Passport) */}
+            <div className="absolute top-4 right-4 z-[40] flex gap-2 md:right-8">
+                <Button
+                    size="sm"
+                    variant="secondary"
+                    className="shadow-lg bg-white/90 backdrop-blur-md hidden md:flex"
+                    onClick={() => setIsPassportOpen(true)}
+                >
+                    <BookOpen className="h-4 w-4 mr-2 text-indigo-600" />
+                    Passport
+                </Button>
+                <Button
+                    size="icon"
+                    className="shadow-lg rounded-full h-10 w-10 overflow-hidden border-2 border-white"
+                    onClick={() => setIsProfileOpen(true)}
+                >
+                    {currentUser?.avatar ? (
+                        <img src={currentUser.avatar} alt="Profile" className="h-full w-full object-cover" />
+                    ) : (
+                        <UserCircle className="h-6 w-6" />
+                    )}
+                </Button>
+            </div>
 
             {/* Sidebar / Overlay for Timeline */}
             <AnimatePresence>
@@ -89,6 +140,7 @@ function App() {
                                 places={userPlaces}
                                 selectedPlaceId={selectedPlaceId}
                                 onSelectPlace={selectPlace}
+                                onImageClick={setLightboxImage}
                             />
                         </div>
                     </div>
@@ -113,6 +165,7 @@ function App() {
                     places={userPlaces}
                     selectedPlaceId={selectedPlaceId}
                     onSelectPlace={selectPlace}
+                    onImageClick={setLightboxImage}
                 />
             </main>
         </div>

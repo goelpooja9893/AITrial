@@ -8,6 +8,7 @@ export interface Place {
     name: string;
     location: Coordinates;
     country?: string;
+    countryCode?: string; // e.g. "fr", "jp"
     visitDate: string; // ISO Date String
     notes?: string;
     rating?: number; // 1-5
@@ -23,5 +24,6 @@ export interface PlaceInput {
     lat: number;
     lng: number;
     country?: string;
+    countryCode?: string;
     image?: string;
 }
